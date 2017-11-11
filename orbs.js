@@ -7,6 +7,8 @@ const express = require('express');
 console.log('[Dependency Loading] Loaded Express'.yellow)
 const plugin = require('./pluginLoader.js');
 console.log('[Dependency Loading] Loaded Plugin Loader'.yellow)
+const game = require('./game.js');
+console.log('[Dependency Loading] Loaded Game'.yellow)
 // DONE
 console.log('[Dependency Loading] Dependencies Loaded!'.green)
 console.log('')
@@ -25,7 +27,6 @@ console.log('')
 
 //Vars
 let WHEN = {temp: []};
-let plugins = [];
 
 function when(_x23423412_32142, _func234234234_324234){
     let _A21312_sdaw9324 = window.WHEN.temp.length;
@@ -37,29 +38,6 @@ function when(_x23423412_32142, _func234234234_324234){
     }, 1);
 }
 
-
-
-
-let gameTick = function() {
-    // Process Game, Players
-}
-
-let gameTicking;
-let gameStarted = false;
-let gameStart = function() {
-    if (!gameStarted){
-        gameStarted = true;
-        console.log('Starting Game!'.bold.green);
-        gameTicking = setInterval(gameTick, 1, false);
-    }
-}
-let gameStop = function() {
-    if (gameStarted){
-        gameStarted = false;
-        clearInterval(gameTicking);
-        console.log('Stoping Game!'.bold.red);
-    }
-}
 
 
 
@@ -105,4 +83,4 @@ plugin.load(express)
 setTimeout(() => {console.log('Game Paused, join to start game!'.bold.cyan)}, 500)
 
 // listen
-app.listen(350)
+app.listen(800)
