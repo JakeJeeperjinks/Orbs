@@ -99,7 +99,7 @@ console.log('                                                                   
 console.log('                                                                              '.green)
 
 console.log('[Game Info] Client on Port : '.bold)
-plugin.load(true)
+plugin.load(express)
 
 
 setTimeout(() => {console.log('Game Paused, join to start game!'.bold.cyan)}, 500)

@@ -1,23 +1,18 @@
 const fs = require('fs');
 const ini = require('ini');
 
-exports.load = function(all, plugin){
-    if (all){
-        // Load all plugins in folder.
-
-        let plugins = [];
-        fs.readdirSync('./Plugins').forEach(file => {
-            let stats = fs.statSync(file)
-            if (stats.isDirectory()){
-                plugins[plugins.length] = file;
-                console.log(String('[Game Info] Loading Plugin ' + file).bold)
-            }else {
-                console.log(String(file + ' Not in a folder, cant load it as a plugin.').bold.red)
-            }
-        });
-
-
-    }else {
-        // Load individual plugin
-    }
+exports.load = function(express){
+    // Load all plugins in folder.
+    let pluginlist = [];
+    let plugins = {};
+    fs.readdirSync('./Plugins').forEach(file => {
+        let stats = fs.statSync(__dirname + '/Plugins/' + file)
+        if (stats.isDirectory()){
+            pluginlist[pluginlist.length] = file;
+            console.log(String('[Game Info] Loading Plugin ' + file).bold)
+            plugins[file] = require(__dirname + '/Plugins/' + file + '/plugin.js');
+            let settings = ini.parse(fs.readFileSync(__dirname + '/Plugins/' + file + '/settings.ini', 'utf-8'))
+            plugins[file].load(settings, express);
+        }
+    });
 }
