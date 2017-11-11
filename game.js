@@ -47,7 +47,7 @@ exports.init = (gameVars, express) => {
                     }
                     let player = {
                         name : data.name,
-                        playerId : 'player' + id,
+                        playerId : id,
                         mass : cellStartMass,
                         cells : [{
                             cellId: 0,
@@ -58,7 +58,7 @@ exports.init = (gameVars, express) => {
 
 
                     }
-                    ws.send(JSON.parse({type: 'upgrade', reason: 'Migrate Communication Servers', code: 'A-1-01', userid: ''}))
+                    ws.send(JSON.parse({type: 'upgrade', reason: 'Migrate Communication Servers', code: 'A-1-01', userid: id}))
                 }else {
                     ws.send(JSON.parse({type: 'bad-request', reason: 'Reached Max IP Player Limit of 4, disconnect other players or wait a few minutes and rejoin.', code: 'A-1-00'}))
                 }
