@@ -55,8 +55,10 @@ exports.init = (gameVars, express) => {
                             cords: [Math.floor((Math.random() * settings.width) + cellStartMass/2), Math.floor((Math.random() * settings.height) + cellStartMass/2)]
                         }],
                         split: 0,
-
-
+                        movingTo : {
+                            x : 0,
+                            y : 0
+                        }
                     }
                     ws.send(JSON.parse({type: 'upgrade', reason: 'Migrate Communication Servers', code: 'A-1-01', userid: id}))
                 }else {
