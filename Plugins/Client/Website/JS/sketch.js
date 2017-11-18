@@ -1,20 +1,109 @@
-let blob;
+// Change for different Server and Port
+let SERVER = '72.223.112.19';
+let PORT = '801' // Default port game will run on
+
+let blob = [];
 let blobs = [];
 let scroll = 0.5;
 let zoom = 1;
 let ejectedMass = [];
-let EjectMe = 5;
+let drawing = false;
+let bfGameText = 'Press Play to Connect!';
+let initConnect;
+let clientId;
+let packets;
+let borders = [false, false, false, false]
+
+function play() {
+    let name = document.getElementById('name').value;
+    if (name.length > 15){
+        alertify.parent(document.body);
+        alertify.alert('Names must be less than 15 characters!');
+        return false;
+    }else{
+        bfGameText = 'Connecting...';
+        initConnect = new WebSocket('ws://' + SERVER + ':' + PORT + '/new');
+        initConnect.onmessage = (e) => {
+            let data = JSON.parse(e.data);
+            blob[0] = new Blob(0, 0, data.blob.mass, data.blob.color, data.blob.name);
+            clientId = data.id;
+            packets = new WebSocket('ws:/' + SERVER + ':' + PORT + '/player/' + clientId);
+
+            packets.onmessage = (e) => {
+                handlePacket(e);
+            }
+
+            packets.onopen = (e) => {
+                setInterval(() => {
+                    packets.send(JSON.stringify({
+                        type: 'request',
+                        request: 'blob',
+                        id: clientId
+                    }));
+                    packets.send(JSON.stringify({
+                        type: 'request',
+                        request: 'blobs',
+                        id: clientId
+                    }));
+                }, 1);
+                drawing = true;
+            }
+            document.getElementById('overlay').style.visibility = "hidden";
+            console.log('Client Connected to Server!');
+        }
+        initConnect.onopen = (e) => {
+            initConnect.send(JSON.stringify({
+                name : document.getElementById('name').value || 'Unnamed Cell'
+            }))
+        }
+
+    }
+}
+
+function handlePacket(e) {
+    console.log('Packet');
+    let DATA = JSON.parse(e.data);
+    if (DATA.type == 'blob-data'){
+        //blob[0].pos.x = DATA.data.blob.x;
+        //blob[0].pos.y = DATA.data.blob.y;
+    }else if (DATA.type == 'blobs-data'){
+        blobs = [];
+        for (let i=0; i < DATA.data.blobs.length; i++) {
+            blobs[i] = new Blob(DATA.data.blobs[i].x, DATA.data.blobs[i].y, DATA.data.blobs[i].mass, DATA.data.blobs[i].color, '');
+        }
+    }
+}
+
+function constructPacket(TYPE, SOCKET, DATA){
+    if (TYPE == 'mouse'){
+        SOCKET.send(JSON.stringify({
+            type: 'mouse',
+            mouse: {
+                x: DATA.x,
+                y: DATA.y
+            },
+            id: clientId,
+            width: width,
+            height: height
+        }));
+        return true
+    }else {
+        return false
+    }
+}
 
 function setup() {
     createCanvas(window.innerWidth - 20, window.innerHeight - 35);
     setFrameRate(240);
-    blob = new Blob(0, 0, 64);
-    for (let i=0; i< 500; i++){
-        let x = random(-5000, 5000);
-        let y = random(-5000, 5000)
+
+    //blob[0].name = "Player";
+    /* for (let i=0; i< 500; i++){
+        let x = random(-worldX, worldX);
+        let y = random(-worldY, worldY)
         let R = random(32)
         blobs[i] = new Blob(x, y, R);
-    }
+        blobs[i].name = "Food";
+    } */
     document.getElementById('fps').innerHTML = "FPS : " + Math.floor(frameRate());
     setInterval(() => {
         document.getElementById('fps').innerHTML = "FPS : " + Math.floor(frameRate());
@@ -39,61 +128,50 @@ function keyPressed() {
 
 function draw() {
     background(0);
+    if (drawing) {
+        noStroke();
 
-    if (keyIsDown(87)){
-        if (EjectMe == 5){
-            if (blob.r > 65){
-                let arrayId = ejectedMass.length;
-                ejectedMass[arrayId] = new Blob(blob.pos.x, blob.pos.y, 32, [blob.color[0], blob.color[1], blob.color[2]]);
-                ejectedMass[arrayId].killable = false;
-                ejectedMass[arrayId].projection = {
-                    cont: 20 + sqrt(blob.r),
-                    x : mouseX,
-                    y : mouseY,
-                    blobX : blob.pos.x,
-                    blobY : blob.pos.y
-                }
-                let sum = PI * blob.r * blob.r - PI * ejectedMass[arrayId].r * ejectedMass[arrayId].r;
-                blob.r = sqrt(sum / PI);
-            }
-            EjectMe = 0;
-        }else {
-            EjectMe++;
+        translate(width/2, height/2);
+        let newzoom = 64 / (blob[0].r * scroll);
+        zoom = lerp(zoom, newzoom, 0.08)
+        scale(zoom);
+        translate(-blob[0].x, -blob[0].y)
+        if (keyIsDown(87)){
+            // Send Server W
+        }
+        for (let i= blobs.length-1; i>=0;i--){
+            blobs[i].show();
         }
 
+        blob[0].show();
+        strokeWeight(20)
+        stroke(153);
+        if (borders[0]){
+            line(borders[0].x, -borders[0].y, -borders[0].x, -borders[0].y);
+        }
+        if (borders[1]){
+            line(borders[1].x, borders[1].y, -borders[1].x, borders[1].y);
+        }
+        if (borders[2]){
+            line(borders[2].x, borders[2].y, borders[2].x, -borders[2].y);
+        }
+        if (borders[3]){
+            line(-borders[3].x, borders[3].y, -borders[3].x, -borders[3].y);
+        }
+
+        let mousePacket = constructPacket('mouse', packets, {x: mouseX, y: mouseY});
+
+        if(!mousePacket){
+            alertify.error("FATAL ERROR! Mouse Packet Failed to Send! :(");
+        }
+
+    }else {
+        fill(255, 255, 255)
+        textSize(100);
+        textAlign(CENTER, CENTER);
+        text(bfGameText, width / 2, height / 4)
     }
 
-    translate(width/2, height/2);
-    let newzoom = 64 / (blob.r * scroll);
-    zoom = lerp(zoom, newzoom, 0.08)
-    scale(zoom);
-    translate(-blob.pos.x, -blob.pos.y)
-    for (let i= blobs.length-1; i>=0;i--){
-        blobs[i].show();
-        if (blob.eats(blobs[i], true)){
-            blobs.splice(i, 1);
-        }
-    }
-    for (let ii= ejectedMass.length-1; ii>=0;ii--){
-        if (ejectedMass[ii].projection.killable && blob.eats(ejectedMass[ii], false)){
-            ejectedMass.splice(ii, 1);
-        }else {
-            if (ejectedMass[ii].projection.cont > 0){
-                for (let iii=0; iii < 2; iii++){
-                    let vel = createVector(ejectedMass[ii].projection.x-width/2, ejectedMass[ii].projection.y-height/2);
-                    vel.setMag(3 + sqrt(blob.r));
-                    ejectedMass[ii].pos.add(vel);
-                    ejectedMass[ii].projection.cont--;
-                }
-
-            }else {
-                ejectedMass[ii].projection.killable = true;
-            }
-            ejectedMass[ii].show();
-        }
-    }
-    blob.show();
-    blob.update();
 }
 
 

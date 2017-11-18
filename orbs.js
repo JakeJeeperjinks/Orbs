@@ -76,10 +76,13 @@ console.log('                                                                   
 console.log('                                                                              '.green)
 console.log('                                                                              '.green)
 
-console.log('[Game Info] Client on Port : '.bold)
+console.log('[Game Info] Game Started!'.bold)
+console.log('[Game Info] Loading Plugins!'.bold)
 plugin.load(express)
 
+game.init({
 
+}, express)
 setTimeout(() => {console.log('Game Paused, join to start game!'.bold.cyan)}, 500)
 
 // listen
