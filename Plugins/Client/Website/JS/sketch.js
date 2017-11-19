@@ -12,7 +12,16 @@ let bfGameText = 'Press Play to Connect!';
 let initConnect;
 let clientId;
 let packets;
-let borders = [false, false, false, false]
+let borders = [false, false, false, false];
+let connected = false;
+let alive = false;
+
+function radToMass(r){
+    return Math.floor((Math.PI * r * r) / 100);
+}
+function massToRad(mass){
+    return Math.sqrt((mass * 100) / PI)
+}
 
 function play() {
     let name = document.getElementById('name').value;
@@ -21,40 +30,54 @@ function play() {
         alertify.alert('Names must be less than 15 characters!');
         return false;
     }else{
-        bfGameText = 'Connecting...';
-        initConnect = new WebSocket('ws://' + SERVER + ':' + PORT + '/new');
-        initConnect.onmessage = (e) => {
-            let data = JSON.parse(e.data);
-            blob[0] = new Blob(0, 0, data.blob.mass, data.blob.color, data.blob.name);
-            clientId = data.id;
-            packets = new WebSocket('ws:/' + SERVER + ':' + PORT + '/player/' + clientId);
+        if (connected){
+            if (!alive){
+                document.getElementById('overlay').style.visibility = "hidden";
+                packets.send(JSON.stringify({
+                    type: 'respawn',
+                    id: clientId,
+                    name: name
+                }))
+            }
+        }else {
+            bfGameText = 'Connecting...';
+            initConnect = new WebSocket('ws://' + SERVER + ':' + PORT + '/new');
+            initConnect.onmessage = (e) => {
+                let data = JSON.parse(e.data);
+                blob[0] = new Blob(0, 0, data.blob.mass, data.blob.color, data.blob.name);
+                clientId = data.id;
+                packets = new WebSocket('ws:/' + SERVER + ':' + PORT + '/player/' + clientId);
 
-            packets.onmessage = (e) => {
-                handlePacket(e);
+                packets.onmessage = (e) => {
+                    handlePacket(e);
+                }
+
+                packets.onopen = (e) => {
+                    alive = true;
+                    setInterval(() => {
+                        packets.send(JSON.stringify({
+                            type: 'request',
+                            request: 'blob',
+                            id: clientId
+                        }));
+                        packets.send(JSON.stringify({
+                            type: 'request',
+                            request: 'blobs',
+                            id: clientId
+                        }));
+                    }, 1);
+                    drawing = true;
+                }
+                document.getElementById('overlay').style.visibility = "hidden";
+                console.log('Client Connected to Server!');
+            }
+            initConnect.onopen = (e) => {
+                connected = true;
+                initConnect.send(JSON.stringify({
+                    name : document.getElementById('name').value || 'Unnamed Cell'
+                }))
             }
 
-            packets.onopen = (e) => {
-                setInterval(() => {
-                    packets.send(JSON.stringify({
-                        type: 'request',
-                        request: 'blob',
-                        id: clientId
-                    }));
-                    packets.send(JSON.stringify({
-                        type: 'request',
-                        request: 'blobs',
-                        id: clientId
-                    }));
-                }, 1);
-                drawing = true;
-            }
-            document.getElementById('overlay').style.visibility = "hidden";
-            console.log('Client Connected to Server!');
-        }
-        initConnect.onopen = (e) => {
-            initConnect.send(JSON.stringify({
-                name : document.getElementById('name').value || 'Unnamed Cell'
-            }))
         }
 
     }
@@ -66,10 +89,21 @@ function handlePacket(e) {
     if (DATA.type == 'blob-data'){
         //blob[0].pos.x = DATA.data.blob.x;
         //blob[0].pos.y = DATA.data.blob.y;
+        if (!DATA.data.dead){
+            blob[0].r = massToRad(DATA.data.blob.mass);
+            blob[0].color = DATA.data.blob.color;
+            alive = true;
+        }else {
+            alive = false;
+            blob[0].color = [0, 0, 0];
+        }
     }else if (DATA.type == 'blobs-data'){
         blobs = [];
         for (let i=0; i < DATA.data.blobs.length; i++) {
             blobs[i] = new Blob(DATA.data.blobs[i].x, DATA.data.blobs[i].y, DATA.data.blobs[i].mass, DATA.data.blobs[i].color, '');
+        }
+        for (let I=0; I<DATA.data.players.length; I++){
+            blobs[blobs.length] = new Blob(DATA.data.players[I].x, DATA.data.players[I].y, DATA.data.players[I].mass, DATA.data.players[I].color, DATA.data.players[I].name);
         }
     }
 }

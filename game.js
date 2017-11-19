@@ -22,7 +22,7 @@ function food(x, y, mass){
         this.y = -1 * (this.y - y);
     }
     this.mass = mass;
-    this.r = sqrt((mass * 100) / PI);
+    this.r = function(){return sqrt((this.mass * 100) / PI)};
     this.color = [Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1)];
 }
 
@@ -30,7 +30,7 @@ let gameTick = setInterval(() => {
     //game
     if (status == 'new'){
         console.log('Setting up new game...');
-        for (let i=0; i<10000; i++){
+        for (let i=0; i<5000; i++){
             cells[i] = new food(10000, 10000, 12);
         }
         status = 'running';
@@ -38,7 +38,7 @@ let gameTick = setInterval(() => {
     }else if (status == 'running'){
 
     }
-}, 1)
+}, 100)
 
 function makeid() {
   var text = "";
@@ -59,21 +59,58 @@ function idInUse(id) {
     return RETURN
 }
 
+function random(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
 function radToMass(r){
     return Math.floor((Math.PI * r * r) / 100);
 }
 function massToRad(mass){
     return Math.sqrt((mass * 100) / PI)
 }
-function around(x, y){
+function around(x, y, id){
     let AR_BLOBS = [];
-    for (let i=0; i<cells.length; i++){
+    let AR_PLAYERS = [];
+    for (let i= cells.length-1; i>=0;i--){
         if (cells[i].x < x+2000 && cells[i].x > x-2000 && cells[i].y < y+2000 && cells[i].y > y-2000){
             let h = cells[i];
             AR_BLOBS[AR_BLOBS.length] = {mass: h.mass, x: (h.x - x), y: (h.y - y), color: h.color};
         }
+        let cCell = cells[i];
+        let player = players[id];
+        let v1 = new vector(player.blob.x, player.blob.y);
+        let v2 = new vector(cCell.x, cCell.y);
+        let d = vector.distance(v1, v2);
+        player.r = massToRad(player.blob.mass);
+        if (d < player.r + (cCell.r() / 2) && player.blob.mass > (cCell.mass + (cCell.mass / 100))){
+            let sum = PI * player.r * player.r + PI * cCell.r() * cCell.r();
+            players[id].blob.mass = radToMass(sqrt(sum / PI));
+            cells.splice(i, 1);
+            food(10000, 10000, 12);
+        }
     }
-    return AR_BLOBS;
+    let playerList = Object.getOwnPropertyNames(players);
+    for (let I= playerList.length-1; I>=0;I--){
+        let cPlayer = players[playerList[I]];
+        if (cPlayer.blob.x < x+2000 && cPlayer.blob.x > x-2000 && cPlayer.blob.y < y+2000 && cPlayer.blob.y > y-2000 && playerList[I] != id && !cPlayer.dead){
+            let h = cPlayer;
+            AR_PLAYERS[AR_PLAYERS.length] = {mass: h.blob.mass, x: (h.blob.x - x), y: (h.blob.y - y), color: h.blob.color, name: h.name};
+            let cCell = cPlayer;
+            let player = players[id];
+            let v1 = new vector(player.blob.x, player.blob.y);
+            let v2 = new vector(cCell.blob.x, cCell.blob.y);
+            let d = vector.distance(v1, v2);
+            player.r = massToRad(player.blob.mass);
+            cCell.r = massToRad(cCell.blob.mass);
+            if (d < player.r + (cCell.r / 2) && player.blob.mass > (cCell.blob.mass + (cCell.blob.mass / 100))){
+                let sum = PI * player.r * player.r + PI * cCell.r * cCell.r;
+                players[id].blob.mass = radToMass(sqrt(sum / PI));
+                players[playerList[I]].dead = true;
+            }
+        }
+    }
+    return [AR_BLOBS, AR_PLAYERS];
 }
 
 exports.init = (gameVars, express) => {
@@ -96,6 +133,7 @@ exports.init = (gameVars, express) => {
             let playerColor = [Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1)]
             players[newId] = {
                 name: playerName,
+                dead: false,
                 blob: {
                     color: playerColor,
                     mass: 128,
@@ -120,7 +158,9 @@ exports.init = (gameVars, express) => {
     });
     gameServ.ws('/player/:id', (ws, req) => {
         ws.on('message', (dat) => {
-            let ip = ws._socket.remoteAddress;
+            if (ws._socket.remoteAddress){
+                let ip = ws._socket.remoteAddress;
+            }
             let data = JSON.parse(dat);
             let packet = {
                 type: '',
@@ -142,48 +182,57 @@ exports.init = (gameVars, express) => {
                     if (player){
                         let x = player.blob.x;
                         let y = player.blob.y;
-                        let CELLS = around(x, y);
-                        packet.data.blobs = CELLS;
+                        let CELLS = around(x, y, data.id);
+                        packet.data.blobs = CELLS[0];
+                        packet.data.players = CELLS[1];
                         ws.send(JSON.stringify(packet));
                     }
                 }
             }else if (data.type == 'mouse'){
                 let player = players[data.id];
                 if (player){
-                    let x = player.blob.x;
-                    let y = player.blob.y;
-                    let mouseX = data.mouse.x;
-                    let mouseY = data.mouse.y;
-                    let vel = new vector(mouseX-(data.width/2), mouseY-(data.height/2));
-                    vel.setMag(3/(sqrt(massToRad(player.blob.mass)) / 32));
-                    player.blob.x += vel.x;
-                    player.blob.y += vel.y;
-                }
-                /* this.update = function() {
-                    if (this.pos.x < worldX && this.pos.x > -worldX && this.pos.y < worldY && this.pos.y > -worldY){
-                        if (mouseX <= (width/2 + 10) && mouseX >= (width/2 - 10) && mouseY <= (height/2 + 10) && mouseY >= (height/2 - 10)){
+                    if (!player.dead){
+                        // Mouse
+                        let x = player.blob.x;
+                        let y = player.blob.y;
+                        let mouseX = data.mouse.x;
+                        let mouseY = data.mouse.y;
+                        if ((mouseX-(data.width/2)) < 5 && (mouseY-(data.height/2)) < 5 && (mouseX-(data.width/2)) > -5 && (mouseY-(data.height/2)) > -5 ){
                             //nothing
                         }else {
-                            let vel = createVector(mouseX-width/2, mouseY-height/2);
-                            vel.setMag(3/(sqrt(this.r) / 32));
-                            this.pos.add(vel);
-                        }
-                        this.r -= (0.0025 * (sqrt(this.r)/ 1.5))
-                    }else {
-                        if (!(this.pos.x < worldX)) {
-                            this.pos.x--;
-                        }else if (!(this.pos.x > -worldX)){
-                            this.pos.x++;
-                        }
-                        if (!(this.pos.y < -worldY)){
-                            this.pos.y--;
-                        }else if (!(this.pos.y > worldY)){
-                            this.pos.y++;
+                            let vel = new vector(mouseX-(data.width/2), mouseY-(data.height/2));
+                            vel.setMag(3/(sqrt(massToRad(player.blob.mass)) / 32));
+                            players[data.id].blob.x += vel.x;
+                            players[data.id].blob.y += vel.y;
                         }
                     }
 
 
-                } */
+                }
+            }else if (data.type == 'respawn'){
+                let player = players[data.id];
+                if (player){
+                    if (player.dead){
+                        let playerName = '';
+                        for (let i=0; i< (data.name.split('')).length && i < 16; i++){
+                            playerName += (data.name.split(''))[i];
+                        }
+                        if (data.name.length == 0){
+                            playerName == 'Unnamed Cell';
+                        }
+                        let playerColor = [Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1)]
+                        players[data.id] = {
+                            name: playerName,
+                            dead: false,
+                            blob: {
+                                color: playerColor,
+                                mass: 128,
+                                x: random(-10000, 10000),
+                                y: random(-10000, 10000)
+                            }
+                        }
+                    }
+                }
             }
         })
 
