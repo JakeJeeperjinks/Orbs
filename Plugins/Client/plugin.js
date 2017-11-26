@@ -2,6 +2,8 @@
 
 let serv = exports;
 
+serv.gamePlugin = false;
+
 serv.load = (settings, express) => {
     let port = settings.port;
     console.log(String('[Client Plugin] Loading Client Server on port : ' + port).bold);

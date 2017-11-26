@@ -1,9 +1,9 @@
 console.log('Starting...')
 
 // Dependencies
-const colors = require('colors');
+const colors = require(__dirname + '/node_modules/colors/lib/index.js');
 console.log('[Dependency Loading] Loaded Colors'.yellow)
-const express = require('express');
+const express = require(__dirname + '/node_modules/express/index.js');
 console.log('[Dependency Loading] Loaded Express'.yellow)
 const plugin = require('./pluginLoader.js');
 console.log('[Dependency Loading] Loaded Plugin Loader'.yellow)
@@ -78,11 +78,13 @@ console.log('                                                                   
 
 console.log('[Game Info] Game Started!'.bold)
 console.log('[Game Info] Loading Plugins!'.bold)
-plugin.load(express)
+let plugins = plugin.load(express);
+// plugins[0] = Plugin List (Name of all plugins);
+// plugins[1] = Plugin Code (Object, by name);
+// plugins[2] = Game Plugins (Load in game engine)
 
-game.init({
 
-}, express)
+game.init(plugins[2], express)
 setTimeout(() => {console.log('Game Paused, join to start game!'.bold.cyan)}, 500)
 
 // listen
