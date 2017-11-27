@@ -1,0 +1,53 @@
+var vector = require("vector").Vector
+function inteceptCircleLineSeg(circle, line){
+    var a, b, c, d, u1, u2, ret, retP1, retP2, v1, v2;
+    v1 = {};
+    v2 = {};
+    v1.x = line.p2.x - line.p1.x;
+    v1.y = line.p2.y - line.p1.y;
+    v2.x = line.p1.x - circle.center.x;
+    v2.y = line.p1.y - circle.center.y;
+    b = (v1.x * v2.x + v1.y * v2.y);
+    c = 2 * (v1.x * v1.x + v1.y * v1.y);
+    b *= -2;
+    d = Math.sqrt(b * b - 2 * c * (v2.x * v2.x + v2.y * v2.y - circle.radius * circle.radius));
+    if(isNaN(d)){ // no intercept
+        return [];
+    }
+    u1 = (b - d) / c;  // these represent the unit distance of point one and two on the line
+    u2 = (b + d) / c;    
+    retP1 = {};   // return points
+    retP2 = {}  
+    ret = []; // return array
+    if(u1 <= 1 && u1 >= 0){  // add point if on the line segment
+        retP1.x = line.p1.x + v1.x * u1;
+        retP1.y = line.p1.y + v1.y * u1;
+        ret[0] = retP1;
+    }
+    if(u2 <= 1 && u2 >= 0){  // second add point if on the line segment
+        retP2.x = line.p1.x + v1.x * u2;
+        retP2.y = line.p1.y + v1.y * u2;
+        ret[ret.length] = retP2;
+    }       
+    return ret;
+}
+let a = new vector(0, 0)
+let b = new vector(10, 10)
+let radius = 5;
+var angleDeg = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI
+console.log('Angle Degrees : ' + angleDeg)
+var angleRadians = Math.atan2(b.y - a.y, b.x - a.x)
+console.log('Angle Radians : ' + angleRadians)
+var slope = Math.round(Math.tan(angleRadians) * 100)/100
+console.log('Slope : ' + slope);
+var line = {
+    p1 : a,
+    p2 : b,
+}
+var circle = {
+    radius : radius,
+    center : new vector(0, 0)
+}
+var intersection = inteceptCircleLineSeg(circle, line)
+console.log('Line Intersect At : ' + intersection[0].x + ', ' + intersection[0].y)
+console.log('X : ' + (intersection[0].x * 2) + ' ; Y : ' + (intersection[0].y * 2))
