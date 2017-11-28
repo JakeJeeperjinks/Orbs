@@ -1,5 +1,6 @@
 # Orbs
 An agario based game, open source, and built with tons of plugins.
+### Status : Re-Write (Not Working) ; Re-Write Percent : %10
 
 ## Plugins
 Plugins are drag and drop. Drag the plugin's folder into the Orbs Plugins Folder. <br>
