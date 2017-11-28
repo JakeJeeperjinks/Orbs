@@ -14,7 +14,7 @@ I recommend you install plugins only featured on ouir plugin page and from reput
 Radius is bassed on Mass, both can be transitioned from one unit to another. <br>
 Radius is used for mathematical calculations and client rendering. <br>
 Mass is used by the Server, Server Operator, Client, Users, and Plugin Makers as a common unit of measurement. <br>
-Mass is easibly understood and is factored into calculations like eating cells and players.
-RADIUS to MASS => Math.floor((Math.PI * radius * radius) / 100)
-MASS to RADIUS => Math.round(Math.sqrt((mass * 100) / Math.PI))
+Mass is easibly understood and is factored into calculations like eating cells and players.<br>
+RADIUS to MASS => Math.floor((Math.PI * radius * radius) / 100)<br>
+MASS to RADIUS => Math.round(Math.sqrt((mass * 100) / Math.PI))<br>
 ### (INCOMPLETE)
