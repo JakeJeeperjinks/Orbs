@@ -100,4 +100,3 @@ exports = (blob, mouseX, mouseY, width, height) => {
     }
 
 }
-}

@@ -56,5 +56,8 @@ exports.check = function(settings){
     if (!settings.playerSpawnSize){
         settings.playerSpawnSize = 128;
     }
+    if (!settings.check){
+        settings.check = 'No check defined. Use : check';
+    }
     return settings
 }

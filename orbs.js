@@ -9,12 +9,21 @@ const plugin = require('./pluginLoader.js');
 console.log('[Dependency Loading] Loaded Plugin Loader'.yellow)
 const game = require('./game.js');
 console.log('[Dependency Loading] Loaded Game'.yellow)
+const commands = require('./commands.js');
+console.log('[Dependency Loading] Loaded Commands'.yellow)
+const readline = require('readline');
+console.log('[Dependency Loading] Loaded Readline'.yellow)
 // DONE
 console.log('[Dependency Loading] Dependencies Loaded!'.green)
 console.log('')
 // Initialize
 const app = express();
 console.log('[Initialize] Initializing Express'.yellow)
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+console.log('[Initialize] Initializing Readline'.yellow)
 //DONE
 console.log('[Initialize] Done Initializing'.green)
 console.log('')
@@ -77,15 +86,23 @@ console.log('                                                                   
 console.log('                                                                              '.green)
 
 console.log('[Game Info] Game Started!'.bold)
-console.log('[Game Info] Loading Plugins!'.bold)
+console.log('[Orbs Info] Loading Plugins!'.bold)
 let plugins = plugin.load(express);
 // plugins[0] = Plugin List (Name of all plugins);
 // plugins[1] = Plugin Code (Object, by name);
 // plugins[2] = Game Plugins (Load in game engine)
 
 
-game.init(plugins[2], express)
-setTimeout(() => {console.log('Game Paused, join to start game!'.bold.cyan)}, 500)
+let GAME = game.init(plugins[2], express)
+console.log('Type "help" to see a list of commands'.bold.green);
+rl.on('line', (input) => {
+  if (input){
+      let re = commands(input, GAME);
+      if (re){
+          console.log(re)
+      }
+  }
+});
 
 // listen
 app.listen(800)

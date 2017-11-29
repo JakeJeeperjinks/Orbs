@@ -1,5 +1,5 @@
 const fs = require('fs');
-const ini = require(__dirname + '/node_modules/init/init.js');
+const ini = require(__dirname + '/node_modules/ini/ini.js');
 
 exports.load = function(express){
     // Load all plugins in folder.

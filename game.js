@@ -9,7 +9,7 @@ const Mouse = require(__dirname + '/Game/Physics/mouse.js');
 const Split = require(__dirname + '/Game/Physics/split.js');
 const W = require(__dirname + '/Game/Physics/w.js');
 const fs = require('fs');
-const ini = require(__dirname + '/node_modules/init/init.js');
+const ini = require(__dirname + '/node_modules/ini/ini.js');
 const Settings_Handler = require(__dirname + '/Game/settings.js');
 const vector = require(__dirname + '/Game/Vector/vector.js');
 const Vector = vector.Vector;
@@ -34,6 +34,8 @@ let cell_vals = {
 // On Initialization By Orbs
 exports.init = (plugin_s, express) => {
     // Plugin Handler (Comming Soon...)
+
+    console.log(('[Game Info] Settings Loaded. Check : ' + settings.check).bold)
 
     // Open WebSockets
     server = express();
