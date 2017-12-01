@@ -95,9 +95,10 @@ let plugins = plugin.load(express);
 
 let GAME = game.init(plugins[2], express)
 console.log('Type "help" to see a list of commands'.bold.green);
+console.log('')
 rl.on('line', (input) => {
   if (input){
-      let re = commands(input, GAME);
+      let re = commands(input, GAME, plugins);
       if (re){
           console.log(re)
       }
