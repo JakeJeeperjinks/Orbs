@@ -1,5 +1,5 @@
 console.log('Starting...')
-let version = "build_A_0_0_0_1"
+let version = "build_A_0_0_0_2"
 
 // Dependencies
 const colors = require(__dirname + '/node_modules/colors/lib/index.js');
@@ -22,11 +22,6 @@ console.log('')
 // Initialize
 const app = express();
 console.log('[Initialize] Initializing Express'.yellow)
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-console.log('[Initialize] Initializing Readline'.yellow)
 //DONE
 console.log('[Initialize] Done Initializing'.green)
 console.log('')
@@ -99,12 +94,14 @@ let plugins = plugin.load(express);
 let GAME = game.init(plugins[2], express)
 console.log('Type "help" to see a list of commands'.bold.green);
 console.log('Checking Version...'.bold)
-console.log('')
 let contactedServer = false;
+let show_versionserv_error = true;
 request('http://72.223.112.19:6000/check/' + version, (error, response, body) => {
     if (error){
-        contactedServer = true;
-        console.log(('Error on contacting version server. ' + error).bold.red);
+        if (show_versionserv_error){
+            contactedServer = true;
+            console.log(('Error on contacting version server. ' + error).bold.red);
+        }
     }else {
         let dat = JSON.parse(body);
         if (dat){
@@ -121,18 +118,24 @@ request('http://72.223.112.19:6000/check/' + version, (error, response, body) =>
 });
 setTimeout(() => {
     if (!contactedServer){
+        show_versionserv_error = false;
         console.log('Version Checking Server Could Not Be Reached.'.bold.red);
         console.log('')
     }
-}, 2000)
-rl.on('line', (input) => {
-  if (input){
-      let re = commands(input, GAME, plugins);
-      if (re){
-          console.log(re)
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    rl.on('line', (input) => {
+      if (input){
+          let re = commands(input, GAME, plugins);
+          if (re){
+              console.log(re)
+          }
       }
-  }
-});
+    });
+}, 2000)
+
 
 // listen
 app.listen(800)
