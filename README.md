@@ -19,4 +19,15 @@ Mass is used by the Server, Server Operator, Client, Users, and Plugin Makers as
 Mass is easibly understood and is factored into calculations like eating cells and players.<br>
 RADIUS to MASS => Math.floor((Math.PI * radius * radius) / 100)<br>
 MASS to RADIUS => Math.round(Math.sqrt((mass * 100) / Math.PI))<br>
+### Plugin Commands
+In your plugin.js file create a new array. <br>
+This Array will be under module.exports.commands <br>
+The first object in the array will be a help command. <br>
+Command Objects include three values : commandType (string), name (string), and command (funtion). <br>
+The 'help' command will have the commandType set to 'help', and no name property. The command to be executed is the function command. <br>
+The command function will have an argument for arguments from the command. <br>
+Arguments will be an array, original command not included. <br>
+All regular commands will be after the help command, and have the commandType set to 'command' and the name set to the plugin name. <br>
+For regular commands the command function will still be the same.
+CHECK CLIENT PLUGIN FOR AN EXAMPLE
 ### (INCOMPLETE)
