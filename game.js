@@ -15,6 +15,7 @@ const vector = require(__dirname + '/Game/Vector/vector.js');
 const Vector = vector.Vector;
 const Converter = require(__dirname + '/Game/Vector/converter.js');
 const isJSON = require(__dirname + '/Game/Tools/isjson.js');
+const id = require(__dirname + '/Game/Functions/id.js')
 
 
 // Get Settings
@@ -29,7 +30,11 @@ let players = {};
 let cell_vals = {
     color: [[settings.rgbMin1, settings.rgbMax1], [settings.rgbMin2, settings.rgbMax2], [settings.rgbMin3, settings.rgbMax3], settings.colorOpacity]
 }
-
+let ip = {
+    list: [],
+    ammount: {}
+}
+let allIds = []
 
 // On Initialization By Orbs
 exports.init = (plugin_s, express) => {
@@ -56,12 +61,35 @@ exports.init = (plugin_s, express) => {
 
                     // Check if message is to create player
                     if (data.newplayer) {
+                        let IP = ws._socket.remoteAddress;
+                        let EXISTS = false;
+                        for (let i=0; i<ip.list.length; i++){
+                            if (ip.list[i] == IP){
+                                EXISTS == true;
+                            }
+                        }
+                        if (EXISTS){
+                            if (ip.ammount[IP] > 4){
+                                ws.send({
+                                    error: true,
+                                    reason: 'max-players'
+                                })
+                            }else {
+                                let NEW_ID = id.newId(allIds);
+                                allIds[allIds.length] = NEW_ID
+                                ws.send({
+                                    error: false,
+                                    reason: 'creating-player',
+                                    id: NEW_ID
+                                });
 
+                            }
+                        }
                     }
                 }
             }
         })
-    })
+    });
 
     server.listen(801)
 }

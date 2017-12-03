@@ -59,30 +59,30 @@ let tools = {
         return ret;
     }
 }
-exports = (blob, mouseX, mouseY, width, height) => {
-    let blob2 = new vector(blob.x, blob.y);
-    blob2.mass = blob.mass/2
-    blob2.radius = blob.radius/2
-    blob2.color = blob.color
+module.exports = (cell, mouseX, mouseY, width, height) => {
+    let newcell = new vector(cell.x, cell.y);
+    newcell.mass = cell.mass/2
+    newcell.radius = cell.radius/2
+    newcell.color = cell.color
 
-    blob.mass = blob.mass/2
-    blob.radius = blob.radius/2
+    cell.mass = cell.mass/2
+    cell.radius = cell.radius/2
 
     let quadrant = tools.quadrant(mouseX, mouseY);
     if (quadrant == 'north' || quadrant == 'south' || quadrant == 'east' || quadrant == 'west'){
         if (quadrant == 'north'){
-            blob.y += blob.radius * 2
+            cell.y += cell.radius * 2
         }else if (quadrant == 'south'){
-            blob.y += -(blob.radius * 2)
+            cell.y += -(cell.radius * 2)
         }else if (quadrant == 'east'){
-            blob.x += blob.radius * 2
+            cell.x += cell.radius * 2
         }else if (quadrant == 'west'){
-            blob.x += -(blob.radius * 2)
+            cell.x += -(cell.radius * 2)
         }
     }else {
         let a = new vector(0, 0)
         let b = new vector(mouseX-(width/2), mouseY-(height/2));
-        let radius = blob.radius;
+        let radius = cell.radius;
         var angleDeg = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI
         var angleRadians = Math.atan2(b.y - a.y, b.x - a.x)
         var slope = Math.round(Math.tan(angleRadians) * 100)/100
@@ -95,8 +95,8 @@ exports = (blob, mouseX, mouseY, width, height) => {
             center : new vector(0, 0)
         }
         var intersection = tools.inteceptCircleLineSeg(circle, line)[0]
-        blob2.x += (intersection.x * 2);
-        blob2.y += (intersection.y * 2);
+        newcell.x += (intersection.x * 2);
+        newcell.y += (intersection.y * 2);
     }
-
+    return [cell, newcell];
 }

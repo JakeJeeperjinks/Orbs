@@ -1,10 +1,13 @@
 console.log('Starting...')
+let version = "build_A_0_0_0_1"
 
 // Dependencies
 const colors = require(__dirname + '/node_modules/colors/lib/index.js');
 console.log('[Dependency Loading] Loaded Colors'.yellow)
 const express = require(__dirname + '/node_modules/express/index.js');
 console.log('[Dependency Loading] Loaded Express'.yellow)
+const request = require(__dirname + '/node_modules/request/index.js');
+console.log('[Dependency Loading] Loaded Request'.yellow)
 const plugin = require('./pluginLoader.js');
 console.log('[Dependency Loading] Loaded Plugin Loader'.yellow)
 const game = require('./game.js');
@@ -95,7 +98,33 @@ let plugins = plugin.load(express);
 
 let GAME = game.init(plugins[2], express)
 console.log('Type "help" to see a list of commands'.bold.green);
+console.log('Checking Version...'.bold)
 console.log('')
+let contactedServer = false;
+request('http://72.223.112.19:6000/check/' + version, (error, response, body) => {
+    if (error){
+        contactedServer = true;
+        console.log(('Error on contacting version server. ' + error).bold.red);
+    }else {
+        let dat = JSON.parse(body);
+        if (dat){
+            contactedServer = true;
+            if (dat.ok){
+                console.log(('Version is ok. Current Version : ' + version).bold.green);
+                console.log('')
+            }else if (dat.bad){
+                console.log(('Version is not updated. Current Version : ' + version + '  | Update Version : ' + dat.currentVersion).bold.red)
+                console.log('')
+            }
+        }
+    }
+});
+setTimeout(() => {
+    if (!contactedServer){
+        console.log('Version Checking Server Could Not Be Reached.'.bold.red);
+        console.log('')
+    }
+}, 2000)
 rl.on('line', (input) => {
   if (input){
       let re = commands(input, GAME, plugins);
