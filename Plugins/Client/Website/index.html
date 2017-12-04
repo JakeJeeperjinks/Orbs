@@ -1,10 +1,11 @@
 <html>
     <head>
         <title>Orbs</title>
-        <script src="./files/JS/p5.min.js"></script>
-        <script src="./files/JS/blob.js"></script>
-        <script src="./files/JS/sketch.js"></script>
+        <script src="./files/JS/p5.js"></script>
+        <script src="./files/JS/p5.dom.js"></script>
+
         <style>
+        /* Start http://www.cursors-4u.com */ body, a:hover {cursor: url(http://cur.cursors-4u.net/cursors/cur-2/cur197.ani), url(http://cur.cursors-4u.net/cursors/cur-2/cur197.png), progress !important;} /* End http://www.cursors-4u.com */
         input {
             width: 50%;
             padding: 12px 20px;
@@ -23,16 +24,33 @@
         }
 </style>
     </head>
-    <body style="background-color: black">
+    <body style="background-color: black;">
         <div id="overlay" style="position: absolute;color: black;top: 40%; left: 40%;visibility: block;background-color:white;border-radius:30px;padding: 20px 40px">
-            <center><h1>Orbs.ga</h1></center>
+            <center>
+                <h1>Orbs.ga</h1>
+            </center>
             <br>
-            <input id="name" placeholder="Name" maxlength="15"></input>
+            <input id="name" placeholder="Name" maxlength="15" style="border-radius: 10px;color:black;cursor: url(http://cur.cursors-4u.net/cursors/cur-2/cur197.ani), url(http://cur.cursors-4u.net/cursors/cur-2/cur197.png), progress !important;"></input>
             <span style=" padding-right: 50px; "></span>
-            <button style="cursor: pointer" onclick="javascript:play()">Play</button>
+            <button id="play" style="border-radius: 10px;cursor: url(http://cur.cursors-4u.net/cursors/cur-2/cur197.ani), url(http://cur.cursors-4u.net/cursors/cur-2/cur197.png), progress !important;">Play</button>
+            <br>
+            <br>
+            <center>
+                <p id="server" style="color: grey">Server : None</p>
+            </center>
+            <p style="color: grey">--------------------------------------------------------------------</p>
+            <center>
+                <p style="color: grey">Client By : Triston Stuart</p>
+                <p style="color: grey">Orbs Github : <a href="https://github.com/TristonStuart/Orbs">Orbs</a></p>
+                <p style="color: grey">Removing credit text is a violation of licence agreement.</p>
+            </center>
         </div>
         <div id="fps" style="position: absolute;color: white;">FPS : 0</div>
+        <div id="ping" style="position: absolute;color: white;left: 80px;">Ping : 0</div>
+        <div id="tick" style="position: absolute;color: white;left: 150px;">Server Load : 0</div>
         <div class="alertify-logs bottom left"></div>
         <script src="https://cdn.rawgit.com/alertifyjs/alertify.js/v1.0.10/dist/js/alertify.js"></script>
+        <script src="./files/JS/blob.js"></script>
+        <script src="./files/JS/sketch.js"></script>
     </body>
 </html>

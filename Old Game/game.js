@@ -138,8 +138,8 @@ exports.init = (gameVars, express) => {
                 blob: {
                     color: playerColor,
                     mass: 128,
-                    x: 0,
-                    y: 0
+                    x: random(-10000, 10000),
+                    y: random(-10000, 10000)
                 }
             }
             ws.send(JSON.stringify({
