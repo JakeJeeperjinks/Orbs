@@ -83,6 +83,9 @@ console.log('                                                                   
 console.log('                                                                              '.green)
 console.log('                                                                              '.green)
 
+// Anymodifiede Version must include this below :
+console.log('Orbs, Client Plugin, Orbs Website, Orbs Github, and all versions of Orbs are made by and owned by Triston Stuart'.bold.cyan)
+
 console.log('[Game Info] Game Started!'.bold)
 console.log('[Orbs Info] Loading Plugins!'.bold)
 let plugins = plugin.load(express);

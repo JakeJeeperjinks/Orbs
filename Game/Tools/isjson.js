@@ -1,4 +1,4 @@
-exports = (x) => {
+module.exports = (x) => {
     try {
         JSON.parse(x);
     } catch (e) {

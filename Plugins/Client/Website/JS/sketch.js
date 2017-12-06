@@ -15,9 +15,11 @@
         packets : undefined,
         clientId : undefined,
         initConnect : undefined,
+        initEnd : false,
         connected : false,
         connecting : false,
-        verified : false
+        verified : false,
+        gameData : {}
     }
     let bfGameText = "Press play to Connect"
     let gameVars = {
@@ -41,19 +43,95 @@
         }, 4000)
     }
 
+    let handlePacket = (e) => {
+        let data = JSON.parse(e.data);
+        if (data){
+            if(data.reason == 'verify'){
+                alertify.success('Game Started');
+                server.connecting = false;
+                server.connected = true;
+            }else if (data.reason == 'game'){
+                server.gameData = data.game;
+
+            }
+        }
+    }
+
+    alertify.maxLogItems(5);
+
+    // Play Button
     document.getElementById('play').onclick = () => {
-        bfGameText = "Connecting...";
-        server.connecting = true;
-        clearInterval(particles.dirChanger);
-        particles.system = {};
+        document.getElementById('overlay').style.visibility = 'hidden';
+        if (!server.joined){
+            bfGameText = "Connecting...";
+            server.connecting = true;
+            clearInterval(particles.dirChanger);
+            particles.system = {};
+            if (server.verified){
+                alertify.log('Connecting to Server...');
+                server.initConnect = new WebSocket('ws://' + SERVER + '/join');
+                server.initConnect.onopen = () => {
+                    alertify.success('Connected To Server, Joining Game...');
+                    bfGameText = 'Joining...'
+                    server.initConnect.send(JSON.stringify({
+                        newplayer: true,
+                        name: document.getElementById('name').value || 'Unnamed'
+                    }))
+                }
+                server.initConnect.onclose = () => {
+                    if (server.initEnd){
+                        server.packets = new WebSocket('ws://' + SERVER + '/player/' + server.clientId);
+                        server.packets.onopen = () => {
+                            alertify.success('Connected To Game');
+                            server.packets.send(JSON.stringify({
+                                init: true
+                            }))
+                        }
+                        server.packets.onclose = () => {
+                            alertify.error('Disconnected From Game');
+                        }
+                        server.packets.onmessage = handlePacket;
+                    }else {
+                        bfGameText = 'Disconnected'
+                        alertify.error('Disconnected From Server');
+                    }
+
+                }
+                server.initConnect.onmessage = (e) => {
+                    if (e.data){
+                        let data = JSON.parse(e.data);
+                        if (data.error){
+                            alertify.error('Error Joining : ' + data.reason);
+                        }else {
+                            if (data.reason == 'creating-player'){
+                                server.clientId = data.id;
+                                server.initEnd = true;
+                                server.initConnect.send(JSON.stringify({disconnect: true}));
+                                server.initConnect.close();
+                            }
+                        }
+                    }
+                }
+            }else {
+                alertify.error('Server isnt verified to exist. Wait till verification or try a different server.')
+            }
+        }else {
+            alertify.error('Already Joined. Refresh Page if this is a mistake.')
+        }
+
     }
 
     let sketch = (p) => {
         let canvas;
         p.setup = () => {
+            // Create Canvas
             canvas = p.createCanvas(window.innerWidth - 20, window.innerHeight - 35);
+
+            // Set Menue Pos
             document.getElementById('overlay').style.top = (p.height / 2) - 20 - (359 / 2)
             document.getElementById('overlay').style.left = (p.width / 2) - 10 - (363 / 2)
+
+            // Set Server
             if (SERVER || SERVER == ""){
                 let serv = prompt("Enter a server, or use default.", "Orbs");
                 if (serv == 'Orbs'){
@@ -84,11 +162,18 @@
                     document.getElementById('server').innerHTML = "Server : " + SERVER + " [✅] "
                 }
             }
+
+            // Set Frame Rate
             p.setFrameRate(240);
+
+            // Set fps counter
             document.getElementById('fps').innerHTML = "FPS : " + Math.floor(p.frameRate());
             setInterval(() => {
                 document.getElementById('fps').innerHTML = "FPS : " + Math.floor(p.frameRate());
             }, 500);
+
+
+            // Start Particles
             particles.system = new ParticleSystem(p.createVector(p.width / 2, p.height / 2));
 
         }
@@ -101,7 +186,7 @@
             p.background(0);
 
             if (server.connected){
-
+                p.ellipse(p.width / 2, p.height / 2, 50);
             }else {
                 p.fill(255, 255, 255);
                 p.textSize(60);
