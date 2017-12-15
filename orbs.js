@@ -1,5 +1,5 @@
 console.log('Starting...')
-let version = "build_A_0_0_0_2"
+let version = "build_A_0_0_0_3"
 
 // Dependencies
 const colors = require(__dirname + '/node_modules/colors/lib/index.js');
