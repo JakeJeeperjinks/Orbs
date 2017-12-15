@@ -1,3 +1,26 @@
+// Logo :)
+console.log('%c                                                                               ', 'background: #404040;color: #329932');
+console.log('%c                                         bbbbbbbb                              ', 'background: #404040;color: #329932');
+console.log('%c      OOOOOOOOO                          b::::::b                              ', 'background: #404040;color: #329932');
+console.log('%c    OO:::::::::OO                        b::::::b                              ', 'background: #404040;color: #329932');
+console.log('%c  OO:::::::::::::OO                      b::::::b                              ', 'background: #404040;color: #329932');
+console.log('%c O:::::::OOO:::::::O                      b:::::b                              ', 'background: #404040;color: #329932');
+console.log('%c O::::::O   O::::::O rrrrr   rrrrrrrrr    b:::::bbbbbbbbb         ssssssssss   ', 'background: #404040;color: #329932');
+console.log('%c O:::::O     O:::::O r::::rrr:::::::::r   b::::::::::::::bb     ss::::::::::s  ', 'background: #404040;color: #329932');
+console.log('%c O:::::O     O:::::O r:::::::::::::::::r  b::::::::::::::::b  ss:::::::::::::s ', 'background: #404040;color: #329932');
+console.log('%c O:::::O     O:::::O rr::::::rrrrr::::::r b:::::bbbbb:::::::b s::::::ssss:::::s', 'background: #404040;color: #329932');
+console.log('%c O:::::O     O:::::O  r:::::r     r:::::r b:::::b    b::::::b  s:::::s  ssssss ', 'background: #404040;color: #329932');
+console.log('%c O:::::O     O:::::O  r:::::r     rrrrrrr b:::::b     b:::::b    s::::::s      ', 'background: #404040;color: #329932');
+console.log('%c O:::::O     O:::::O  r:::::r             b:::::b     b:::::b       s::::::s   ', 'background: #404040;color: #329932');
+console.log('%c O::::::O   O::::::O  r:::::r             b:::::b     b:::::b ssssss   s:::::s ', 'background: #404040;color: #329932');
+console.log('%c O:::::::OOO:::::::O  r:::::r             b:::::bbbbbb::::::b s:::::ssss::::::s', 'background: #404040;color: #329932');
+console.log('%c  OO:::::::::::::OO   r:::::r             b::::::::::::::::b  s::::::::::::::s ', 'background: #404040;color: #329932');
+console.log('%c    OO:::::::::OO     r:::::r             b:::::::::::::::b    s:::::::::::ss  ', 'background: #404040;color: #329932');
+console.log('%c      OOOOOOOOO       rrrrrrr             bbbbbbbbbbbbbbbb      sssssssssss    ', 'background: #404040;color: #329932');
+console.log('%c                                                                               ', 'background: #404040;color: #329932');
+console.log('%c                                                                               ', 'background: #404040;color: #329932');
+console.log('%c                                                                               ', 'background: #404040;color: #329932');
+
 // Run in a local function, same from window (global) variable acess!
 (() => {
   // Safe From Outside Influence :)
