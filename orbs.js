@@ -28,21 +28,19 @@ console.log('')
 
 
 
-
-
 // API/SERVER
 
 //Vars
 let WHEN = {temp: []};
 
 function when(_x23423412_32142, _func234234234_324234){
-    let _A21312_sdaw9324 = window.WHEN.temp.length;
-    window.WHEN.temp[_A21312_sdaw9324] = setInterval(function() {
-        if (eval(_x23423412_32142)){
-            _func234234234_324234();
-            clearInterval(window.WHEN.temp[_A21312_sdaw9324]);
-        }
-    }, 1);
+  let _A21312_sdaw9324 = window.WHEN.temp.length;
+  window.WHEN.temp[_A21312_sdaw9324] = setInterval(function() {
+    if (eval(_x23423412_32142)){
+      _func234234234_324234();
+      clearInterval(window.WHEN.temp[_A21312_sdaw9324]);
+    }
+  }, 1);
 }
 
 
@@ -100,44 +98,50 @@ console.log('Checking Version...'.bold)
 let contactedServer = false;
 let show_versionserv_error = true;
 request('http://72.223.112.19:6000/check/' + version, (error, response, body) => {
-    if (error){
-        if (show_versionserv_error){
-            contactedServer = true;
-            console.log(('Error on contacting version server. ' + error).bold.red);
-        }
-    }else {
-        let dat = JSON.parse(body);
-        if (dat){
-            contactedServer = true;
-            if (dat.ok){
-                console.log(('Version is ok. Current Version : ' + version).bold.green);
-                console.log('')
-            }else if (dat.bad){
-                console.log(('Version is not updated. Current Version : ' + version + '  | Update Version : ' + dat.currentVersion).bold.red)
-                console.log('')
-            }
-        }
+  if (error){
+    if (show_versionserv_error){
+      contactedServer = true;
+      console.log(('Error on contacting version server. ' + error).bold.red);
     }
-});
-setTimeout(() => {
-    if (!contactedServer){
-        show_versionserv_error = false;
-        console.log('Version Checking Server Could Not Be Reached.'.bold.red);
+  }else {
+    let dat = JSON.parse(body);
+    if (dat){
+      contactedServer = true;
+      if (dat.ok){
+        console.log(('Version is ok. Current Version : ' + version).bold.green);
         console.log('')
-    }
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-    rl.on('line', (input) => {
-      if (input){
-          let re = commands(input, GAME, plugins);
-          if (re){
-              console.log(re)
-          }
+      }else if (dat.bad){
+        console.log(('Version is not updated. Current Version : ' + version + '  | Update Version : ' + dat.currentVersion).bold.red)
+        console.log('')
       }
-    });
+    }
+  }
+});
+// Commands
+setTimeout(() => {
+  if (!contactedServer){
+    show_versionserv_error = false;
+    console.log('Version Checking Server Could Not Be Reached.'.bold.red);
+    console.log('')
+  }
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  rl.on('line', (input) => {
+    if (input){
+      let re = commands(input, GAME, plugins);
+      if (re){
+        console.log(re)
+      }
+    }
+  });
 }, 2000)
+
+// On Close
+process.on('exit', function (){
+  console.log('Next Time Use command "close". This will properly exit everything.');
+});
 
 
 // listen
