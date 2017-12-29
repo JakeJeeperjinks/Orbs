@@ -1,4 +1,4 @@
-// Client PLugin by : Triston Stuart
+// Client Plugin by : Triston Stuart
 
 let serv = exports;
 
