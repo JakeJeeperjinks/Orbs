@@ -139,10 +139,13 @@ setTimeout(() => {
 }, 2000)
 
 // On Close
-process.on('exit', function (){
-  console.log('Next Time Use command "close". This will properly exit everything.');
+process.on('exit', function (code){
+  console.log('Next Time Use command "close". This will properly exit everything.'.yellow);
 });
-
+process.on('SIGINT', function() {
+    console.log('=- EXITING -='.red.underline);
+    setTimeout(() => {process.exit()}, 1000);
+});
 
 // listen
 app.listen(800)
