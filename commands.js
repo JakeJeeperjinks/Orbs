@@ -8,6 +8,63 @@ module.exports = (data, game, plugins) => {
 
         if (cmd == 'help'){
             return 'Commands :\nhelp | Shows list of commands!\nplugins | Shows list of plugins\nplugins help [plugin] | Executes plugin help command if any.\n'.bold
+        }else if (cmd == 'player') {
+          if (args.length > 1) {
+            if (args[0] == 'info'){
+              let players = game.getPlayers();
+              if (players[args[1]]){
+                let cP = players[args[1]];
+                console.log('Id : ' + args[1] + '  |  ' + 'Name : ' + cP.name + '  |  ' + 'Mass : ' + cP.blob.mass);
+                return '\n';
+              }else {
+                return 'Error no player exists with that id! Try Command : player-list ; to see ids. \n'
+              }
+            }else if (args[0] == 'change'){
+              let players = game.getPlayers();
+              if (players[args[1]]){
+                let cP = players[args[1]];
+                if ((typeof args[2] !== 'undefined') && (typeof args[3] !== 'undefined')){
+                  if (args[2] == 'mass'){
+                    let worked = game.changePlayer(args[1], 'mass', args[3]);
+                    if (worked){
+                      console.log('Successfully Changed!')
+                      return '\n';
+                    }else {
+                      console.log('Something went wrong :(');
+                      return '\n';
+                    }
+                  }else if (args[2] == 'name'){
+                    let worked = game.changePlayer(args[1], 'name', args[3]);
+                    if (worked){
+                      console.log('Successfully Changed!')
+                      return '\n';
+                    }else {
+                      console.log('Something went wrong :(');
+                      return '\n';
+                    }
+                  }
+                }else {
+                  return 'Error no property and value argument provided. Cmd Structure : player [info | change] [player id] [Change -> property (mass, name) ] [Change -> value]'
+                }
+              }else {
+                return 'Error no player exists with that id! Try Command : player-list ; to see ids.'
+              }
+            }
+          }else {
+            return 'Not enough args! Cmd Structure : player [info | change] [player id] [Change -> property (mass, name) ] [Change -> value]'
+          }
+        }else if (cmd == 'player-list') {
+          let players = game.getPlayers();
+          let list = Object.entries(players);
+          if (list.length == 0){
+            return 'No players in game!'
+          }
+          for (i=0; i < list.length; i++){
+            let cP = list[i];
+            console.log('Id : ' + cP[0] + '  |  ' + 'Name : ' + cP[1].name + '  |  ' + 'Mass : ' + cP[1].blob.mass)
+          }
+          console.log(' -= END =- ')
+          return ''
         }else if (cmd == 'plugins') {
             if (args.length > 0){
                 if (args[0] == 'help'){

@@ -1,154 +1,260 @@
-// Orbs Game Engine
-// Version : 2
-// Made by: Triston Stuart
-
-// Import Modules
-const Player = require(__dirname + '/Game/Cells/player.js');
-const Food = require(__dirname + '/Game/Cells/food.js');
-const Mouse = require(__dirname + '/Game/Physics/mouse.js');
-const Split = require(__dirname + '/Game/Physics/split.js');
-const W = require(__dirname + '/Game/Physics/w.js');
-const fs = require('fs');
-const ini = require(__dirname + '/node_modules/ini/ini.js');
-const Settings_Handler = require(__dirname + '/Game/settings.js');
-const vector = require(__dirname + '/Game/Vector/vector.js');
-const Vector = vector.Vector;
-const Converter = require(__dirname + '/Game/Vector/converter.js');
-const isJSON = require(__dirname + '/Game/Tools/isjson.js');
-const id = require(__dirname + '/Game/Functions/id.js')
-
-
-// Get Settings
-let settings = ini.parse(fs.readFileSync(__dirname + '/Game/settings.ini', 'utf-8'));
-// Scan to see settings are intact
-settings = Settings_Handler.check(settings);
-
-// Variables
-let status = 'non';
-let blobs = [];
+let status = 'no-game';
+let settings = {};
+let cellStartMass = 300;
+let cells = [];
 let players = {};
-let universalPlayer = 0;
-let universalFood = 0;
-let clients = {};
-let cell_vals = {
-  color: [[settings.rgbMin1, settings.rgbMax1], [settings.rgbMin2, settings.rgbMax2], [settings.rgbMin3, settings.rgbMax3], settings.colorOpacity]
+let userIds = [];
+let ip_connections = {};
+let gameServ;
+let expressWs;
+let PI = Math.PI;
+let sqrt = Math.sqrt;
+let vector = require('vector').Vector;
+
+// Food Construction
+function food(x, y, mass){
+
+  this.x = Math.floor((Math.random() * (2 * x)) + 1);
+  if (this.x > x){
+    this.x = -1 * (this.x - x);
+  }
+  this.y = Math.floor((Math.random() * (2 * y)) + 1);
+  if (this.y > y){
+    this.y = -1 * (this.y - y);
+  }
+  this.mass = mass;
+  this.r = function(){return sqrt((this.mass * 100) / PI)};
+  this.color = [Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1)];
 }
-let ip = {
-  ammount: {}
+
+let gameTick = setInterval(() => {
+  //game
+  if (status == 'new'){
+    console.log('Setting up new game...');
+    for (let i=0; i<5000; i++){
+      cells[i] = new food(20000, 20000, 12);
+    }
+    status = 'running';
+    console.log('Game running...');
+  }else if (status == 'running'){}
+}, 100)
+
+function makeid() {
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  for (var i = 0; i < 10; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  return text;
 }
-let allIds = []
+function idInUse(id) {
+  let RETURN = false;
+  for(let i=0; i<userIds.length; i++){
+    if (userIds[i] == id){
+      RETURN = true;
+    }
+  }
+  return RETURN
+}
+
 function random(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function initializeGame() {
-  for (let i=0; i < 1000; i++){
-    blobs[i] = Food(random(cell_vals.color[1][0], cell_vals.color[1][1]), random(cell_vals.color[2][0], cell_vals.color[2][1]), 127, 10, universalFood,10000, 10000);
-    universalFood++;
-  }
+function radToMass(r){
+  return Math.floor((Math.PI * r * r) / 100);
 }
-
-function gameTick() {
+function massToRad(mass){
+  return Math.sqrt((mass * 100) / PI)
+}
+function around(x, y, id){
+  let myPlayer = players[id];
+  let constMult = 2000/128 * 0.08;
+  let newVisDist = constMult * myPlayer.blob.mass + 2000;
+  let AR_BLOBS = [];
+  let AR_PLAYERS = [];
+  for (let i= cells.length-1; i>=0;i--){
+    if (cells[i].x < x+newVisDist && cells[i].x > x-newVisDist && cells[i].y < y+newVisDist && cells[i].y > y-newVisDist){
+      let h = cells[i];
+      AR_BLOBS[AR_BLOBS.length] = {mass: h.mass, x: (h.x - x), y: (h.y - y), color: h.color};
+    }
+    let cCell = cells[i];
+    let player = players[id];
+    let v1 = new vector(player.blob.x, player.blob.y);
+    let v2 = new vector(cCell.x, cCell.y);
+    let d = vector.distance(v1, v2);
+    player.r = massToRad(player.blob.mass);
+    if (d < player.r + (cCell.r() / 2) && player.blob.mass > (cCell.mass + (cCell.mass / 100))){
+      let sum = PI * player.r * player.r + PI * cCell.r() * cCell.r();
+      players[id].blob.mass = radToMass(sqrt(sum / PI));
+      cells.splice(i, 1);
+      cells[cells.length] = new food(10000, 10000, 12)
+      food(10000, 10000, 12);
+    }
+  }
   let playerList = Object.getOwnPropertyNames(players);
-  for (let P = 0; P < playerlist.length; P++){
-    let C_player = players[playerList[P]];
-    let around = [];
-    for (let B = 0; B < blobs.length; B++){
-      if (B.x > C_player.x - 2000 && b.x < C_player.x + 2000 && B.y > C_player.y - 2000 && b.y < C_player.y + 2000 ){
-        around[around.length] = {
-          x: B.x - C_player.x,
-          y: B.y - C_player.y,
-          color: B.color,
-          radius: B.radius
-        };
+  for (let I= playerList.length-1; I>=0;I--){
+    let cPlayer = players[playerList[I]];
+    if (cPlayer.blob.x < x+2000 && cPlayer.blob.x > x-2000 && cPlayer.blob.y < y+2000 && cPlayer.blob.y > y-2000 && playerList[I] != id && !cPlayer.dead){
+      let h = cPlayer;
+      AR_PLAYERS[AR_PLAYERS.length] = {mass: h.blob.mass, x: (h.blob.x - x), y: (h.blob.y - y), color: h.blob.color, name: h.name};
+      let cCell = cPlayer;
+      let player = players[id];
+      let v1 = new vector(player.blob.x, player.blob.y);
+      let v2 = new vector(cCell.blob.x, cCell.blob.y);
+      let d = vector.distance(v1, v2);
+      player.r = massToRad(player.blob.mass);
+      cCell.r = massToRad(cCell.blob.mass);
+      if (d < player.r + (cCell.r / 2) && player.blob.mass > (cCell.blob.mass + (cCell.blob.mass / 100))){
+        let sum = PI * player.r * player.r + PI * cCell.r * cCell.r;
+        players[id].blob.mass = radToMass(sqrt(sum / PI));
+        players[playerList[I]].dead = true;
       }
     }
-    players[playerList[P]].around = around;
-    clients[C_player.id].send(JSON.stringify({}))
   }
-
-
-  gameTick();
+  return [AR_BLOBS, AR_PLAYERS];
 }
 
-// On Initialization By Orbs
-exports.init = (plugin_s, express) => {
-  // Plugin Handler (Comming Soon...)
-
-  console.log(('[Game Info] Settings Loaded. Check : ' + settings.check).bold)
-
-  // Open WebSockets
-  server = express();
-  expressWs = require('express-ws')(server);
-
-  // On Join Message
-  server.ws('/join', (ws, req) => {
+exports.init = (gameVars, express) => {
+  settings = gameVars;
+  gameServ = express();
+  expressWs = require('express-ws')(gameServ);
+  gameServ.ws('/new', (ws, req) => {
     ws.on('message', (dat) => {
-      // Check if Dat exists
-      if (dat){
-
-        // Check if Dat is a JSON string
-        if (isJSON(dat)){
-          // Handle request
-
-          // String => Object
-          let data = JSON.parse(dat);
-
-          // Check if message is to create player
-          if (data.newplayer) {
-            let IP = String(ws._socket.remoteAddress);
-            if (!ip.ammount[IP]){
-              ip.ammount[IP] = 0;
-            }
-            if (ip.ammount[IP] > 4){
-              ws.send(JSON.stringify({
-                error: true,
-                reason: 'Max Connections (4) for IP'
-              }))
+      let ip = ws._socket.remoteAddress;
+      let data = JSON.parse(dat);
+      let playerName = '';
+      for (let i=0; i< (data.name.split('')).length && i < 16; i++){
+        playerName += (data.name.split(''))[i];
+      }
+      if (data.name.length == 0){
+        playerName == 'Unnamed Cell';
+      }
+      let newId = makeid();
+      let playerColor = [Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1)]
+      players[newId] = {
+        name: playerName,
+        dead: false,
+        blob: {
+          color: playerColor,
+          mass: 128,
+          x: 0, //random(-10000, 10000),
+          y: 0 //random(-10000, 10000)
+        }
+      }
+      ws.send(JSON.stringify({
+        blob : {
+          name : playerName,
+          color : playerColor,
+          mass: 128
+        },
+        id : newId
+      }));
+      if (status == 'paused'){
+        console.log('Client Connected! Game Unpaused'.bold.cyan);
+        status = 'new';
+      }
+    })
+  });
+  gameServ.ws('/player/:id', (ws, req) => {
+    ws.on('message', (dat) => {
+      if (ws._socket.remoteAddress){
+        let ip = ws._socket.remoteAddress;
+      }
+      let data = JSON.parse(dat);
+      let packet = {
+        type: '',
+        data: {
+        }
+      }
+      if (data.type == 'request'){
+        if (data.request == 'blob'){
+          packet.type = 'blob-data';
+          let player = players[data.id];
+          if (player){
+            packet.data = player;
+            ws.send(JSON.stringify(packet));
+          }
+        }else if (data.request == 'blobs'){
+          packet.type = 'blobs-data';
+          let player = players[data.id];
+          if (player){
+            let x = player.blob.x;
+            let y = player.blob.y;
+            let CELLS = around(x, y, data.id);
+            packet.data.blobs = CELLS[0];
+            packet.data.players = CELLS[1];
+            ws.send(JSON.stringify(packet));
+          }
+        }
+      }else if (data.type == 'mouse'){
+        let player = players[data.id];
+        if (player){
+          if (!player.dead){
+            // Mouse
+            let x = player.blob.x;
+            let y = player.blob.y;
+            let mouseX = data.mouse.x;
+            let mouseY = data.mouse.y;
+            if ((mouseX-(data.width/2)) < 5 && (mouseY-(data.height/2)) < 5 && (mouseX-(data.width/2)) > -5 && (mouseY-(data.height/2)) > -5 ){
+              //nothing
             }else {
-              ip.ammount[IP] += 1;
-              let NEW_ID = id.newId(allIds);
-              allIds[allIds.length] = NEW_ID;
-              let name = data.name;
-              if (name.length > 15){
-                name = 'Unnamed'
-              }
-              players[NEW_ID] = new Player(name || 'Unnamed', 128, 10000, -10000, [random(cell_vals.color[0][0], cell_vals.color[0][1]), random(cell_vals.color[1][0], cell_vals.color[1][1]), random(cell_vals.color[2][0], cell_vals.color[2][1]), 127], NEW_ID, universalPlayer)
-              ws.send(JSON.stringify({
-                error: false,
-                reason: 'creating-player',
-                id: NEW_ID
-              }));
-
+              let vel = new vector(mouseX-(data.width/2), mouseY-(data.height/2));
+              vel.setMag(3/(sqrt(massToRad(player.blob.mass)) / 32));
+              players[data.id].blob.x += vel.x;
+              players[data.id].blob.y += vel.y;
             }
-          }else if (data.disconnect){
-            let IP = String(ws._socket.remoteAddress);
-            ip.ammount[IP] -= 1;
+          }
+        }
+      }else if (data.type == 'respawn'){
+        let player = players[data.id];
+        if (player){
+          if (player.dead){
+            let playerName = '';
+            for (let i=0; i< (data.name.split('')).length && i < 16; i++){
+              playerName += (data.name.split(''))[i];
+            }
+            if (data.name.length == 0){
+              playerName == 'Unnamed Cell';
+            }
+            let playerColor = [Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1), Math.floor((Math.random() * 255) + 1)]
+            players[data.id] = {
+              name: playerName,
+              dead: false,
+              blob: {
+                color: playerColor,
+                mass: 128,
+                x: 0, //random(-10000, 10000),
+                y: 0 //random(-10000, 10000)
+              }
+            }
           }
         }
       }
     })
   });
-  server.ws('/player/:id', (ws, req) => {
-    ws.on('message', (dat) => {
-      // Check if Dat exists
-      if (dat){
-
-        // Check if Dat is a JSON string
-        if (isJSON(dat)){
-          let data = JSON.parse(dat);
-          let id = req.params.id;
-          if (players[id]){
-            if (data.init){
-              clients[id] = ws;
-              ws.send(JSON.stringify({reason: 'verify'}))
-            }
-          }
+  gameServ.listen(801)
+  status = 'paused';
+  return {
+    getPlayers : function() {
+      return players;
+    },
+    getStatus : function() {
+      return status;
+    },
+    changePlayer : function(id, prop, val){
+      if (players[id]){
+        if (prop == 'mass'){
+          players[id].blob.mass = val;
+          return true;
+        }else if (prop == 'name'){
+          players[id].name = val;
+          return true;
+        }else {
+          return false;
         }
+      }else {
+        return false;
       }
-    })
-
-  })
-
-  server.listen(801)
+    }
+  }
 }
