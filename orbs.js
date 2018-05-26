@@ -126,7 +126,7 @@ setTimeout(() => {
 
 // On Close
 process.on('exit', function (code){
-  console.log('Next Time Use command "close". This will properly exit everything.'.yellow);
+  //console.log('Next Time Use command "close". This will properly exit everything.'.yellow);
 });
 process.on('SIGINT', function() {
     console.log('=- EXITING -='.red.underline);

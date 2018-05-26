@@ -7,7 +7,7 @@ module.exports = (data, game, plugins) => {
         let args = arguments;
 
         if (cmd == 'help'){
-            return 'Commands :\nhelp | Shows list of commands!\nplugins | Shows list of plugins\nplugins help [plugin] | Executes plugin help command if any.\n'.bold
+            return 'Commands :\nhelp | Shows list of commands!\nplugins | Shows list of plugins\nplugins help [plugin] | Executes plugin help command if any.\nplayer-list | Returns list of all players and their ids, names, and mass\nplayer | [info | change] [player id] [Change -> property (mass, name) ] [Change -> value]\n'.bold
         }else if (cmd == 'player') {
           if (args.length > 1) {
             if (args[0] == 'info'){
