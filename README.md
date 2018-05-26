@@ -1,15 +1,16 @@
 # Orbs
 An agario based game, open source, and built with tons of plugins.
-### Status : Re-Write (Not Working) ; Re-Write Percent : %20
-### Update : Added version checker
-### Working Version : https://github.com/TristonStuart/Orbs/tree/70a4308a3c63f401fb17b5474ff77bca919d0ddb (Update v0.3 is the last working release. Tweeking to the npm packages locations may be made if you arent using npm and dont have some packages downloaded. I will publish a FULL working update on version 0.3, called 0.3.1, and add a link here while I work on a re-write)
+### Update : Added version checker + Commands
+### Status : Reverted back to old version; Going to try to do a slow adding on this time.
 
 ## Plugins
-Plugins are drag and drop. Drag the plugin's folder into the Orbs Plugins Folder. <br>
-Plugins will automatically be loaded in on startup. <br>
-Plugins will have full acess to the game, game engine, game physics, console, and other plugins. <br>
-Plugins may make themselves Private to avoid interference from other plugins. (Good For User Data Plugins) <br>
-I recommend you install plugins only featured on our plugin page and from reputable plugin makers.
+Look at the Client plugin for ideas on what to do for a plugin.
+Right now the plugins don't have any access to the game, although you may be able to manipulate commands so you can access the player-list and change player's mass and name.
+Plugins now have the ability to have their own commands, again look at the Client plugin for an example.
+Plugins are basically limited to user input from the console, and hooking onto nodejs. I can't really think of some good plugin ideas, maybe a custom Client plugin, or a advanced help command plugin.
 
 ## Docs
-I am currently working on the docs! Expect a semi-full documentation website soon!
+I am currently working on the docs, although this project is time consuming and I may put off docs until I feel a good version of the game is here.
+
+## Plans
+Not much, im finding it hard to have inspiration now a days but i will try to get motivated to add collisions, borders, w feeding (I had a prototype which was part of the re-write but it wasn't very good), and spliting. These are kinda hard features since I am inexpireinced with this kind of programming and mind-set.
