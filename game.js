@@ -1,6 +1,6 @@
 let status = 'no-game';
 let settings = {};
-let cellStartMass = 300;
+let cellStartMass = 50;
 let cells = [];
 let players = {};
 let userIds = [];
